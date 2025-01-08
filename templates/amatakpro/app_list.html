@@ -1,25 +1,43 @@
 {% extends 'amatakpro/base.html' %}
 {% block content %}
 <!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>App List</title>
 </head>
 <body>
-    <h1>Your Apps</h1>
-    <ul>
-        {% for app in app_details %}
-            <li>{{ app.app_name }}
-                <ul>
-                    {% for entry in app.entries %}
-                        <li>{{ entry.name }} (Size: {{ entry.size }} bytes)</li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endfor %}
-    </ul>
+    <h1>App List</h1>
     <a href="{% url 'create_app' %}">Create New App</a>
+    <a href="{% url 'add_to_settings' %}">Add App to Settings</a>
+    <table>
+        <tr>
+            <th>App Name</th>
+            <th>Entry Name</th>
+            <th>File Size (bytes)</th>
+            <th>Created Datetime</th>
+            <th>Editable</th>
+            <th>Is Directory</th>
+        </tr>
+        {% for app in app_details %}
+            {% for entry in app.entries %}
+                <tr>
+                    <td>{{ app.app_name }}</td>
+                    <td>
+                        {% if entry.is_directory %}
+                            {{ entry.name }}
+                        {% else %}
+                            <a href="{% url 'edit_file_view' app.app_name entry.name %}">{{ entry.name }}</a>
+                        {% endif %}
+                    </td>
+                    <td>{{ entry.size }}</td>
+                    <td>{{ entry.created_time }}</td>
+                    <td>{{ entry.editable }}</td>
+                    <td>{{ entry.is_directory }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </table>
 </body>
 
 <style>
