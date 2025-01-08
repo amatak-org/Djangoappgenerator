@@ -1,0 +1,12 @@
+{% extends 'amatakpro/base.html' %}
+{% block content %}
+<h2>Welcome to AmatakPro</h2>
+<p>This is your admin dashboard where you can manage the settings, create new apps, and view existing apps.</p>
+{% if messages %}
+    <ul>
+    {% for message in messages %}
+        <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}

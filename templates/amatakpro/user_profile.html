@@ -1,0 +1,9 @@
+{% extends 'amatakpro/base.html' %}
+{% block content %}
+<h2>User Profile</h2>
+<p><strong>Username:</strong> {{ user.username }}</p>
+<p><strong>Email:</strong> {{ user.email }}</p>
+<p><a href="{% url 'update_profile' %}">Edit Profile</a></p>
+<p><a href="{% url 'user_bills' %}">View Bills</a></p>
+<p><a href="{% url 'change_password' %}">Change Password</a></p>
+{% endblock %}

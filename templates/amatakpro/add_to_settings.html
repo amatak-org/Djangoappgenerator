@@ -1,0 +1,21 @@
+{% extends 'amatakpro/base.html' %}
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add App to Settings</title>
+</head>
+<body>
+    <h1>Add App to Project Settings</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="app_name">App Name:</label>
+        <input type="text" name="app_name" required>
+        <button type="submit">Add to Settings</button>
+    </form>
+    <a href="{% url 'app_list' %}">Cancel</a>
+</body>
+</html>
+
+{% endblock %}

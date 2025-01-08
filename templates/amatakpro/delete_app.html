@@ -1,0 +1,12 @@
+<head>
+    <title>Delete App</title>
+</head>
+<body>
+    <h1>Delete App: {{ app.name }}</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <p>Are you sure you want to delete {{ app.name }}?</p>
+        <button type="submit">Confirm Delete</button>
+    </form>
+    <a href="{% url 'app_list' %}">Cancel</a>
+</body>

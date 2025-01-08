@@ -1,0 +1,17 @@
+{% extends 'amatakpro/base.html' %}
+{% block content %}
+
+<head>
+    <title>Update App</title>
+</head>
+<body>
+    <h1>Update App: {{ app.name }}</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Update</button>
+    </form>
+    <a href="{% url 'app_list' %}">Cancel</a>
+</body>
+
+            {% endblock %}

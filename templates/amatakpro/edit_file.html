@@ -1,0 +1,21 @@
+
+{% extends 'amatakpro/base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit File: {{ file_name }}</title>
+</head>
+<body>
+    <h1>Edit File: {{ file_name }}</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="content" rows="20" cols="80">{{ content }}</textarea>
+        <br>
+        <button type="submit">Save</button>
+    </form>
+    <a href="{% url 'app_list' %}">Cancel</a>
+</body>
+</html>
+
+{% endblock %}

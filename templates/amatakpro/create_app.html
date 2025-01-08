@@ -1,0 +1,16 @@
+{% extends 'amatakpro/base.html' %}
+{% block content %}
+<h2>Create App</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Create</button>
+</form>
+{% if messages %}
+    <div class="messages">
+    {% for message in messages %}
+        <p style="color: red;">{{ message }}</p>
+    {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

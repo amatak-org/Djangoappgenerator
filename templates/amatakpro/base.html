@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <script src="{% static 'js/scripts.js' %}"></script>
+    <title>AmatakPro</title>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Amatak.</h2>
+        <ul>
+            <li><a href="{% url 'homepage' %}">Home</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'admin_settings' %}">Settings</a></li>
+                <li><a href="{% url 'create_app' %}">Create App</a></li>
+                <li><a href="{% url 'app_list' %}">App List</a></li>
+            {% endif %}
+            <li><a href="{% url 'user_profile' %}">Profile</a></li>
+        </ul>
+        <div class="auth">
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}" style="color: white;">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'create_account' %}">Create Account</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="main-content">
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+</body>
+</html>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color:rgb(215, 208, 208);
+    }
+    
+    header {
+        background: #35424a;
+        color: #ffffff;
+        padding: 10px 0;
+        text-align: center;
+    }
+    
+    .sidebar {
+        width: 150px;
+        position: fixed;
+        height: 100%;
+        background-color:rgb(42, 42, 43);
+        padding: 20px;
+    }
+    
+    .sidebar h2 {
+        color: white;
+    }
+    
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .sidebar ul li a {
+        color:rgb(107, 245, 245);
+        text-decoration: none;
+        display: block;
+        padding: 10px;
+    }
+    
+    .sidebar ul li a:hover {
+        background-color: #34495e;
+    }
+    
+    .main-content {
+        margin-left: 270px; /* Width of sidebar + padding */
+        padding: 20px;
+    }
+    .messages {
+        background-color:rgb(52, 53, 53);
+        color: white;
+        padding: 10px;
+        margin: 10px 0;
+    }
+    
+    .btn {
+        background-color: #35424a;
+        color:rgb(185, 180, 180);
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+    }
+    
+    .btn:hover {
+        background-color:rgb(245, 248, 249);
+    }
+</style>

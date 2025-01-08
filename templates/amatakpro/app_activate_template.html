@@ -1,0 +1,25 @@
+{% extends 'amatakpro/base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Activate App</title>
+</head>
+<body>
+    <h1>Activate App</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="app_id">Select an app to activate:</label>
+        <select name="app_id" id="app_id">
+            {% for app in apps %}
+                <option value="{{ app.id }}">{{ app.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Activate</button>
+    </form>
+    <a href="{% url 'app_list' %}">Cancel</a>
+</body>
+</html>
+
+
+{% endblock %}
