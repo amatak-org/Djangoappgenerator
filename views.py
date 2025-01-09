@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+vfrom django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, login
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, PasswordChangeForm
@@ -16,6 +16,8 @@ from django.conf import settings
 from .models import *
 from .forms import *
 from datetime import datetime
+from django.http import JsonResponse
+import zipfile
 
 
 def homepage_view(request):
@@ -34,27 +36,6 @@ def admin_settings_view(request):
         form = AdminSettingsForm(instance=settings)
     return render(request, 'amatakpro/admin_settings.html', {'form': form})
 
-#@login_required
-#def create_django_app(request):
-    #if request.method == 'POST':
-        #form = AppNameForm(request.POST)
-       # if form.is_valid():
-           # app_name = form.cleaned_data['app_name']
-            #os.system(f'django-admin startapp {app_name}')
-            #return HttpResponse(f'App {app_name} created successfully!')
-    #else:
-        #form = AppNameForm()
-    #return render(request, 'amatakpro/create_app.html', {'form': form})
-
-#def create_django_app(app_name):
-    #"""Create a new Django app using the startapp command."""
-    #subprocess.run(['python', 'manage.py', 'startapp', app_name])
-    
-#def create_django_app(app_name):
-    #"""Create a new Django app using the startapp command."""
-    ##app_directory = os.path.join('', app_name)  # Update this to the appropriate directory
-    #subprocess.run(['python', 'manage.py', 'startapp', app_name],) # cwd=app_directory
-    
 
 
 
@@ -141,10 +122,65 @@ def download_app_view(request, app_name):
         messages.error(request, "App not found.")
         return redirect('app_list')
     
+#============================================================================#
 
+###Create Project
 
-###update
+@login_required
+def create_project_view(request):
+    if request.method == "POST":
+        project_name = request.POST.get('project_name', '')
+        project_name = project_name.split(' ')[0]  # Remove spaces from project name
+        project_dir = os.path.join(settings.BASE_DIR, project_name)
 
+        if not os.path.exists(project_dir):
+            os.makedirs(project_dir)
+
+            # Generate basic Django project files, add your own structure if needed
+            os.makedirs(os.path.join(project_dir, 'app'))
+            with open(os.path.join(project_dir, 'app', '__init__.py'), 'w') as f:
+                f.write('')
+            with open(os.path.join(project_dir, 'app', 'views.py'), 'w') as f:
+                f.write('from django.shortcuts import render\n')
+
+            # Here you can create more initial files (urls.py, models.py, etc.)
+
+            # Save project info to database
+            CreatedApp.objects.create(name=project_name)
+
+            return redirect('app_list')
+
+    return render(request, 'amatakpro/create_project.html')
+
+@login_required
+def download_project_view(request, project_name):
+    root_dir = settings.BASE_DIR
+    project_path = os.path.join(root_dir, project_name)
+
+    if os.path.exists(project_path) and os.path.isdir(project_path):
+        zip_filename = f"{project_name}.zip"
+        zip_filepath = os.path.join(root_dir, zip_filename)
+
+        with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for root, dirs, files in os.walk(project_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    zip_file.write(file_path, os.path.relpath(file_path, project_path))
+
+        with open(zip_filepath, 'rb') as zip_file:
+            response = HttpResponse(zip_file.read(), content_type='application/zip')
+            response['Content-Disposition'] = f'attachment; filename={zip_filename}'
+        
+        # Optionally, you can delete the zip file after sending it
+        os.remove(zip_filepath)
+
+        return response
+
+    return JsonResponse({'status': 'error', 'message': 'Project not found'}, status=404)
+
+#============================================================================#
+
+### Create App
 @login_required
 def create_django_app(request):
     if request.method == 'POST':
@@ -174,7 +210,6 @@ def get_directory_contents(path):
     return directory_contents
 
 
-
 @login_required
 def app_list_view(request):
     apps = CreatedApp.objects.all()
@@ -190,27 +225,27 @@ def app_list_view(request):
 
     return render(request, 'amatakpro/app_list.html', {'app_details': app_details})
 
-@login_required
-def update_app_view(request, id):
-    app = get_object_or_404(CreatedApp, id=id)
-    if request.method == 'POST':
-        form = UpdateAppForm(request.POST, instance=app)
-        if form.is_valid():
-            new_name = form.cleaned_data['name']
-            old_name = app.name
+#@login_required
+#def update_app_view(request, id):
+    #app = get_object_or_404(CreatedApp, id=id)
+    #if request.method == 'POST':
+        #form = UpdateAppForm(request.POST, instance=app)
+        #if form.is_valid():
+            #new_name = form.cleaned_data['name']
+            #old_name = app.name
             
             # Rename the directory if the name has changed
-            if old_name != new_name:
-                old_path = os.path.join(settings.BASE_DIR, old_name)
-                new_path = os.path.join(settings.BASE_DIR, new_name)
-                os.rename(old_path, new_path)
-                app.name = new_name
+           # if old_name != new_name:
+               # old_path = os.path.join(settings.BASE_DIR, old_name)
+                #new_path = os.path.join(settings.BASE_DIR, new_name)
+                #os.rename(old_path, new_path)
+                #app.name = new_name
             
-            app.save()
-            return redirect('app_list')
-    else:
-        form = UpdateAppForm(instance=app)
-    return render(request, 'amatakpro/update_app.html', {'form': form, 'app': app})
+            #app.save()
+            #r#eturn redirect('app_list')
+    #else:
+        #form = UpdateAppForm(instance=app)
+    #return render(request, 'amatakpro/update_app.html', {'form': form, 'app': app})
 
 @login_required
 def delete_app_view(request, id):
@@ -278,4 +313,96 @@ def edit_file_view(request, app_name, file_name):
     with open(app_path, 'r') as file:
         content = file.read()
 
-    return render(request, 'amatakpro/edit_file.html', {'app_name': app_name, 'file_name': file_name, 'content': content})
+    return render(request, 'amatakpro/file_editor.html', {'app_name': app_name, 'file_name': file_name, 'content': content})
+
+# Update File View
+@login_required
+def update_file_view(request, app_name, file_name):
+    root_dir = settings.BASE_DIR
+    file_path = os.path.join(root_dir, app_name, file_name)
+
+    if not os.path.exists(file_path):
+        return JsonResponse({'status': 'error', 'message': 'File not found'}, status=404)
+
+    if request.method == 'POST':
+        content = request.POST.get('content', '')
+        with open(file_path, 'w') as file:
+            file.write(content)
+        return JsonResponse({'status': 'success'})
+    
+    with open(file_path, 'r') as file:
+        content = file.read()
+    
+    file_extension = os.path.splitext(file_path)[1]
+    supported_languages = ['.py', '.js', '.css', '.html']
+    return render(request, 'amatakpro/file_editor.html', {'content': content, 'file_extension': file_extension, 'supported_languages': supported_languages})
+
+## Delete File View
+@login_required
+def delete_file_view(request, app_name, file_name):
+    root_dir = settings.BASE_DIR
+    file_path = os.path.join(root_dir, app_name, file_name)
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return redirect('app_list')
+    return JsonResponse({'status': 'error', 'message': 'File not found'}, status=404)
+
+## Create File
+@login_required
+def create_file_view(request, app_name):
+    root_dir = settings.BASE_DIR
+    app_path = os.path.join(root_dir, app_name)
+
+    if request.method == 'POST':
+        file_name = request.POST.get('file_name', '')
+        file_extension = request.POST.get('file_extension', '')
+        full_file_name = f"{file_name}{file_extension}"
+        full_file_path = os.path.join(app_path, full_file_name)
+
+        with open(full_file_path, 'w') as new_file:
+            new_file.write('')  # Create an empty file
+        
+        return redirect('app_list')
+
+    return render(request, 'amatakpro/create_file.html', {'app_name': app_name})
+
+### Delete Folder View
+@login_required
+def delete_folder_view(request, app_name):
+    root_dir = settings.BASE_DIR
+    folder_path = os.path.join(root_dir, app_name)
+
+    if os.path.exists(folder_path) and os.path.isdir(folder_path):
+        shutil.rmtree(folder_path)  # Remove the directory and all its contents
+        return redirect('app_list')
+    return JsonResponse({'status': 'error', 'message': 'Folder not found or could not be deleted'}, status=404)
+
+# Downlaod App.
+@login_required
+def download_folder_view(request, app_name):
+    root_dir = settings.BASE_DIR
+    folder_path = os.path.join(root_dir, app_name)
+
+    if os.path.exists(folder_path) and os.path.isdir(folder_path):
+        zip_filename = f"{app_name}.zip"
+        zip_filepath = os.path.join(root_dir, zip_filename)
+
+        with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for root, dirs, files in os.walk(folder_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    zip_file.write(file_path, os.path.relpath(file_path, folder_path))
+
+        with open(zip_filepath, 'rb') as zip_file:
+            response = HttpResponse(zip_file.read(), content_type='application/zip')
+            response['Content-Disposition'] = f'attachment; filename={zip_filename}'
+        
+        # Optionally, you can delete the zip file after sending it
+        os.remove(zip_filepath)
+
+        return response
+
+    return JsonResponse({'status': 'error', 'message': 'Folder not found'}, status=404)
+
+# End App Section============================================================================#
